@@ -60,7 +60,10 @@ function showPage(items, page) {
    functionality to the pagination buttons.
 ***/
 function appendPageLinks(list) {
+    const divPage = document.querySelector('.page');
     const div = document.createElement('div');
+    div.className = 'pagination';
+    divPage.appendChild(div);
     const ul = document.createElement('ul');
     const pageCount = Math.ceil(list.length / itemsPerPage);
     div.appendChild(ul);
@@ -70,7 +73,7 @@ function appendPageLinks(list) {
         // 'A' element with pagenumber
         const link = document.createElement('a');
         link.setAttribute('href', '#');
-        link.value = pageNumber;
+        link.textContent = pageNumber;
         //first page must be selected initially
         if(pageNumber === 1) {
             link.className = 'active';
@@ -84,6 +87,8 @@ function appendPageLinks(list) {
             }
             // add class 'active' to clicked element
             e.target.className = 'active';
+            // load page with selected items
+            showPage(listItems, pageNumber);
         });
         const li = document.createElement('li');
         li.appendChild(link);
@@ -96,6 +101,9 @@ function appendPageLinks(list) {
 
 }
 
+// Show first page initially
+appendPageLinks(listItems);
+showPage(listItems, 1);
 
 
 
