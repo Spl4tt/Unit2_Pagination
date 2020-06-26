@@ -6,39 +6,21 @@ FSJS project 2 - List Filter and Pagination
 // Study guide for this project - https://drive.google.com/file/d/1OD1diUsTMdpfMDv677TfL1xO2CEkykSz/view?usp=sharing
 
 
-/*** 
-   Add your global variables that store the DOM elements you will 
-   need to reference and/or manipulate. 
-   
-   But be mindful of which variables should be global and which 
-   should be locally scoped to one of the two main functions you're 
-   going to create. A good general rule of thumb is if the variable 
-   will only be used inside of a function, then it can be locally 
-   scoped to that function.
+/***
+ * Declarations
 ***/
 const listItems = document.querySelector('.student-list').children;
 const itemsPerPage = 10;
 
 
-
-
-/*** 
-   Create the `showPage` function to hide all of the items in the 
-   list except for the ten you want to show.
-
-   Pro Tips: 
-     x Keep in mind that with a list of 54 students, the last page
-       will only display four.
-     x Remember that the first student has an index of 0.
-     - Remember that a function `parameter` goes in the parens when
-       you initially define the function, and it acts as a variable 
-       or a placeholder to represent the actual function `argument` 
-       that will be passed into the parens later when you call or 
-       "invoke" the function 
-***/
+/**
+ * Function to show clicked page. Shows as many items on the page as declared in 'itemsPerPage'
+ * @param items - All items in the ul
+ * @param page -  page to show
+ */
 function showPage(items, page) {
     const startIndex = (page * itemsPerPage)-itemsPerPage;// (page parameter * items per page) - items per page
-    const endIndex = page * itemsPerPage;//page parameter * items per page
+    const endIndex = page * itemsPerPage;// page parameter * items per page
 
     // loop over all items, hide the ones not needed
     for(let i = 0; i<items.length; i++) {
@@ -54,11 +36,10 @@ function showPage(items, page) {
 }
 
 
-
-/*** 
-   Create the `appendPageLinks function` to generate, append, and add 
-   functionality to the pagination buttons.
-***/
+/**
+ * creates page buttons on the bottom of the page with click listener
+ * @param list - All items in the ul
+ */
 function appendPageLinks(list) {
     const divPage = document.querySelector('.page');
     const div = document.createElement('div');
@@ -68,9 +49,9 @@ function appendPageLinks(list) {
     const pageCount = Math.ceil(list.length / itemsPerPage);
     div.appendChild(ul);
 
-    //TODO Finish this, point 5 in treehouse
+    // Creates the "button" li with given pagenumber.
     function createLiWithLink(pageNumber) {
-        // 'A' element with pagenumber
+        // 'a' element with pagenumber
         const link = document.createElement('a');
         link.setAttribute('href', '#');
         link.textContent = pageNumber;
@@ -78,18 +59,19 @@ function appendPageLinks(list) {
         if(pageNumber === 1) {
             link.className = 'active';
         }
-        // Clickevent: Remove all 'active' classes from A elements and add the class to the clicked element
+        // Clickevent: Remove all 'active' classes from 'a' elements and add the class to the clicked element
         link.addEventListener('click', (e) => {
-            //Remove all active classes
+            // Remove all active classes
             const activeElements = document.getElementsByClassName('active');
             for(let i = 0; i<activeElements.length; i++) {
-                activeElements[i].className = '';
+                activeElements[i].classList.remove('active');
             }
             // add class 'active' to clicked element
-            e.target.className = 'active';
+            e.target.classList.add('active');
             // load page with selected items
             showPage(listItems, pageNumber);
         });
+        // Create 'li' element and append the link, then return it
         const li = document.createElement('li');
         li.appendChild(link);
         return li;
@@ -98,12 +80,108 @@ function appendPageLinks(list) {
     for(let i = 1; i<=pageCount; i++) {
         ul.appendChild(createLiWithLink(i));
     }
+}
 
+/**
+ * removes the pagination, if it exists
+ */
+function removePagination() {
+    const divPagination = document.querySelector('.pagination');
+    if(divPagination) {
+        divPagination.parentNode.removeChild(divPagination);
+    }
+}
+
+/**
+ * Creates the pagination with given list of items
+ * @param list
+ * @param page
+ */
+function refreshPagination(list, page) {
+    appendPageLinks(list);
+    showPage(list, 1);
+    removeNoResultsLi();
+}
+
+/**
+ * Remove "No results" li, if any exist
+ */
+function removeNoResultsLi() {
+    const ul = document.querySelector('.student-list');
+    const listNoResultsClass = ul.getElementsByClassName('no-results-class');
+    while(listNoResultsClass.length > 0) {
+        ul.removeChild(listNoResultsClass[0]);
+    }
+}
+
+function createSearch() {
+    // Select the div that will contain the search
+    const divPageHeader = document.querySelector('.page-header');
+    // Create search div that contains input and button
+    const divStudentSearch = document.createElement('div');
+    divStudentSearch.className = 'student-search';
+    // create search input
+    const inputStudentSearch = document.createElement('input');
+    inputStudentSearch.type = 'text';
+    inputStudentSearch.setAttribute('placeholder', 'Search for students...');
+
+    // TODO need form for submit event?
+    // Search function called by input keyup event and search button press
+    function search(searchText) {
+        // Array for found Items to show on a paginated page at the end of the search
+        const foundItems = [];
+        if(searchText.length === 0) {
+            // if no seach text is given, refresh pagination with original full list
+            showPage(listItems, 1);
+            removePagination();
+            refreshPagination(listItems, 1);
+        } else {
+            // Search all items with given string
+            for (let i = 0; i < listItems.length; i++) {
+                listItems[i].style.display = 'none';
+                if (listItems[i].textContent.toLowerCase().includes(searchText.toLowerCase())) {
+                    listItems[i].style.display = '';
+                    // Push to array foundItems
+                    foundItems.push(listItems[i]);
+                }
+            }
+            // Remove old pagination and readd with new list of matched items
+            removePagination();
+            refreshPagination(foundItems, 1);
+            if(foundItems.length === 0) {
+                // Show "No results" message as li
+                const liNoResults = document.createElement('li');
+                liNoResults.className = 'no-results-class';
+                liNoResults.textContent = 'No Results';
+                listItems[0].parentNode.appendChild(liNoResults);
+            }
+        }
+    }
+
+    // Keyup event: every keystroke starts the search
+    inputStudentSearch.addEventListener('keyup', () => {
+        search(inputStudentSearch.value);
+    });
+
+    // Create search button
+    const btnSearch = document.createElement('button');
+    btnSearch.textContent = 'Search';
+    btnSearch.addEventListener('submit', () => {
+        search(inputStudentSearch.value);
+    });
+
+    // Add input and button to search div
+    divStudentSearch.appendChild(inputStudentSearch);
+    divStudentSearch.appendChild(btnSearch);
+
+    // Add new search div to page
+    divPageHeader.appendChild(divStudentSearch);
 }
 
 // Show first page initially
-appendPageLinks(listItems);
-showPage(listItems, 1);
+refreshPagination(listItems, 1);
+// Create the search field
+createSearch();
 
 
 
