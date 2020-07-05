@@ -69,7 +69,7 @@ function appendPageLinks(list) {
             // add class 'active' to clicked element
             e.target.classList.add('active');
             // load page with selected items
-            showPage(listItems, pageNumber);
+            showPage(list, pageNumber);
         });
         // Create 'li' element and append the link, then return it
         const li = document.createElement('li');
@@ -99,7 +99,7 @@ function removePagination() {
  */
 function refreshPagination(list, page) {
     appendPageLinks(list);
-    showPage(list, 1);
+    showPage(list, page);
     removeNoResultsLi();
 }
 
