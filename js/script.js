@@ -2,9 +2,6 @@
 Treehouse Techdegree:
 FSJS project 2 - List Filter and Pagination
 ******************************************/
-   
-// Study guide for this project - https://drive.google.com/file/d/1OD1diUsTMdpfMDv677TfL1xO2CEkykSz/view?usp=sharing
-
 
 /***
  * Declarations
@@ -37,7 +34,7 @@ function showPage(items, page) {
 
 
 /**
- * creates page buttons on the bottom of the page with click listener
+ * creates page buttons on the bottom of the page with click listener to change pages
  * @param list - All items in the ul
  */
 function appendPageLinks(list) {
@@ -55,7 +52,7 @@ function appendPageLinks(list) {
         const link = document.createElement('a');
         link.setAttribute('href', '#');
         link.textContent = pageNumber;
-        //first page must be selected initially
+        //Apply class to first button, so that the style applies
         if(pageNumber === 1) {
             link.className = 'active';
         }
@@ -101,6 +98,13 @@ function refreshPagination(list, page) {
     appendPageLinks(list);
     showPage(list, page);
     removeNoResultsLi();
+    // Show "No results" message as li if nothing is in the list
+    if(list.length === 0) {
+        const liNoResults = document.createElement('li');
+        liNoResults.className = 'no-results-class';
+        liNoResults.textContent = 'No Results';
+        listItems[0].parentNode.appendChild(liNoResults);
+    }
 }
 
 /**
@@ -114,6 +118,9 @@ function removeNoResultsLi() {
     }
 }
 
+/**
+ * Create the search bar with all functionality
+ */
 function createSearch() {
     // Select the div that will contain the search
     const divPageHeader = document.querySelector('.page-header');
@@ -125,11 +132,10 @@ function createSearch() {
     inputStudentSearch.type = 'text';
     inputStudentSearch.setAttribute('placeholder', 'Search for students...');
 
-    // TODO need form for submit event?
     // Search function called by input keyup event and search button press
     function search(searchText) {
-        // Array for found Items to show on a paginated page at the end of the search
-        const foundItems = [];
+        // Array of results
+        const listResults = [];
         if(searchText.length === 0) {
             // if no seach text is given, refresh pagination with original full list
             showPage(listItems, 1);
@@ -141,20 +147,13 @@ function createSearch() {
                 listItems[i].style.display = 'none';
                 if (listItems[i].textContent.toLowerCase().includes(searchText.toLowerCase())) {
                     listItems[i].style.display = '';
-                    // Push to array foundItems
-                    foundItems.push(listItems[i]);
+                    // Push to array listResults
+                    listResults.push(listItems[i]);
                 }
             }
-            // Remove old pagination and readd with new list of matched items
+            // Remove old pagination and read with new list of matched items
             removePagination();
-            refreshPagination(foundItems, 1);
-            if(foundItems.length === 0) {
-                // Show "No results" message as li
-                const liNoResults = document.createElement('li');
-                liNoResults.className = 'no-results-class';
-                liNoResults.textContent = 'No Results';
-                listItems[0].parentNode.appendChild(liNoResults);
-            }
+            refreshPagination(listResults, 1);
         }
     }
 
@@ -166,7 +165,7 @@ function createSearch() {
     // Create search button
     const btnSearch = document.createElement('button');
     btnSearch.textContent = 'Search';
-    btnSearch.addEventListener('submit', () => {
+    btnSearch.addEventListener('click', () => {
         search(inputStudentSearch.value);
     });
 
@@ -182,8 +181,3 @@ function createSearch() {
 refreshPagination(listItems, 1);
 // Create the search field
 createSearch();
-
-
-
-
-// Remember to delete the comments that came with this file, and replace them with your own code comments.
